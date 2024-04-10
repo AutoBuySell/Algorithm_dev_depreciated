@@ -43,10 +43,10 @@ def getNewPosition_Manual_v2(asset: Equity_Manual_v2, test_end_point: int = 0) -
         # If a buying or selling point has been appeared, calculate confidence
         confidence = 0
         if buy_flag:
-            confidence = pow(2, (1 - current_price / max_price) / (2 * asset.settings['thr_buy']))
+            confidence = pow(2, (1 - current_price / max_price) / asset.settings['thr_buy'] - 2)
 
         if sell_flag:
-            confidence = pow(2, (current_price / min_price - 1) / (2 * asset.settings['thr_sell']))
+            confidence = pow(2, (current_price / min_price - 1) / asset.settings['thr_sell'] - 2)
 
         confidence = max(confidence, 0.5)
         confidence = min(confidence, 2)
