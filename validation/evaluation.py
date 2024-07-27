@@ -6,7 +6,8 @@ from apis.data import req_data_historical
 
 from validation.visualization import visualize_points
 
-SYMBOLS_FOR_EVALUATION = ['TSLA', 'AAPL', 'META', 'NVDA', 'NFLX', 'ROKU', 'NKLA']
+# SYMBOLS_FOR_EVALUATION = ['TSLA', 'AAPL', 'META', 'NVDA', 'NFLX', 'ROKU', 'NKLA']
+SYMBOLS_FOR_EVALUATION = ['TSLA', 'MSFT', 'META', 'NVDA', 'AMD', 'AMZN', 'AAPL', 'LLY', 'ZG', 'PYPL']
 
 def trading_point_evaluation(startDate: str, endDate: str):
   '''
@@ -41,7 +42,7 @@ def trading_point_evaluation(startDate: str, endDate: str):
 
     judges = asset.data['judge']
     for i in data.index:
-      buySig, sellSig = JUDGEFUNC(asset, i)
+      buySig, sellSig, confidence = JUDGEFUNC(asset, i)
       if buySig:
         for j in range(i - 2, i + 3):
           if j not in checked_selected_points[symbol] and judges[j] == 1:
@@ -90,6 +91,8 @@ def trading_margin_evaluation(symbol: str, startDate: str, endDate: str, initial
       endDate=endDate
     )
 
+  asset.check_data()
+
   asset.account_info['buying_power'] = initial_buying_power
 
   estimated_margins['margin'] = (asset.account_info['buying_power'], 0, 0)
@@ -104,17 +107,25 @@ def trading_margin_evaluation(symbol: str, startDate: str, endDate: str, initial
       currentPrice = data[i]
       if buySig:
         isOrder, qty = ORDERFUNC(asset=asset, side='buy', confidence=confidence)
-        if isOrder:
+        if isOrder and qty > 0:
           asset.account_info['buying_power'] -= qty * currentPrice
           asset.current_position += qty
           ordered.add(i)
+
+          # If a buying or selling point has been appeared, renew start_point
+          asset.start_point = len(asset.data['o']) - 2 if i == 0 else i
+
         predicted_points.append(('buy', i, currentPrice))
       elif sellSig:
         isOrder, qty = ORDERFUNC(asset=asset, side='sell', confidence=confidence)
-        if isOrder:
+        if isOrder and qty > 0:
           asset.account_info['buying_power'] += qty * currentPrice
           asset.current_position -= qty
           ordered.add(i)
+
+          # If a buying or selling point has been appeared, renew start_point
+          asset.start_point = len(asset.data['o']) - 2 if i == 0 else i
+
         predicted_points.append(('sell', i, currentPrice))
 
     estimated_margins['margin'] = (

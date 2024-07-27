@@ -12,6 +12,8 @@ def makeOrders_Manual_v2(asset: Equity_Manual_v2, side: str, confidence: float) 
         is_order = False
         qty = 0
 
+        asset.update_before_order()
+
         target_value = asset.settings['target_value']
         value_diff = asset.value_diff
         buying_power = asset.account_info['buying_power']

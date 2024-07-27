@@ -36,10 +36,6 @@ def getNewPosition_Manual_v2(asset: Equity_Manual_v2, test_end_point: int = 0) -
         buy_flag = thr_buy_sig_on and reb_buy_sig_on
         sell_flag = thr_sell_sig_on and reb_sell_sig_on
 
-        # If a buying or selling point has been appeared, renew start_point
-        if buy_flag or sell_flag:
-            asset.start_point = len(asset.data['o']) - 2 if test_end_point == 0 else test_end_point
-
         # If a buying or selling point has been appeared, calculate confidence
         confidence = 0
         if buy_flag:
